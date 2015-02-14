@@ -1,0 +1,5 @@
+*.pyc
+*.swp
+*.exported
+tree
+wfw/venv
