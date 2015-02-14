@@ -1,60 +1,58 @@
 import click
 from wfw.wfexceptions import LoginFailedException
-from wfw.lib import WorkFlowy
-
-pass_workflowy = click.make_pass_decorator(WorkFlowy, True)
+from wfw.lib import fetch_list, export_list, print_list, search_tags
 
 @click.group()
-@click.pass_context
-def cli(context):
-    context.workflowy = WorkFlowy()
-
+def cli():
+    pass
 
 @cli.command()
 @click.option('--email', prompt=True)
 @click.option('--password', prompt=True, hide_input=True)
-@pass_workflowy
-def sync(workflowy, email, password):
+def fetch(email, password):
     """Fetch list from WorkFlowy server"""
 
     try:
-        workflowy.get_list(email, password)
+        fetch_list(email, password)
     except LoginFailedException:
         click.echo("Unable to fetch your list: wrong e-mail or password.")
 
 
 @cli.command()
 @click.argument('file-name', default='tree.exported')
-@pass_workflowy
-def export(workflowy, file_name):
+def export(file_name):
     """Export your list"""
 
-    workflowy.export_list(file_name)
+    try:
+        export_list(file_name)
+    except IOError:
+        click.echo("You have no local tree")
+    except Exception as ex:
+        click.echo("Error while exporting: {msg}".format(msg=ex.message))
 
 
 @cli.command()
 @click.argument('level', default=1)
 @click.option('--root', default=None)
-@pass_workflowy
-def show(workflowy, level, root):
+def show(level, root):
     """Print your list"""
 
-    workflowy.print_list(level, root)
+    try:
+        print_list(level, root)
+    except IOError:
+        click.echo("You have no local tree")
+    except Exception as ex:
+        click.echo("Error while printing list: {msg}".format(msg=ex.message))
 
 
 @cli.command()
 @click.argument('tag-to-find')
-@pass_workflowy
-def tag(workflowy, tag_to_find):
+def tag(tag_to_find):
     """Find items containing the given tag"""
 
-    workflowy.search_tags(tag_to_find)
-
-@cli.command()
-@click.argument('name')
-@click.argument('parent')
-@pass_workflowy
-def add(workflowy, name, parent):
-    """Add item to list"""
-
-    workflowy.add_item(name, parent)
+    try:
+        search_tags(tag_to_find)
+    except IOError:
+        click.echo("You have no local tree")
+    except Exception as ex:
+        click.echo("Error while searching tag: {msg}".format(msg=ex.message))

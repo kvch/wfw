@@ -1,10 +1,15 @@
 from setuptools import setup
 
 setup(
-    name='yourscript',
+    name='wfw',
     version='0.1',
-    py_modules=['workflowy'],
-    install_requires=[ 'click', 'requests', ],
-    entry_points=
-        'console_scripts' : [ 'wfcli' = 'workflowy.__main__.cli', ],
- )
+    py_modules=['wfw'],
+    install_requires=[
+        'Click',
+        'Requests',
+    ],
+    entry_points='''
+        [console_scripts]
+        wfw=wfw.__main__:cli
+    ''',
+)

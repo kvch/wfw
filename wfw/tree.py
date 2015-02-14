@@ -5,6 +5,7 @@ class Tree(object):
     def __init__(self):
         self.root = Node(0, 'My list', None)
 
+
     def __add_node(self, node, parent):
         new_node = Node(node['id'], node['nm'].encode('utf-8'), parent)
         parent.add_child(new_node)
@@ -12,6 +13,7 @@ class Tree(object):
         if 'ch' in node.keys():
             for child in node['ch']:
                 self.__add_node(child, new_node)
+
 
     def __find_node(self, node, name_to_find):
         if node.name == name_to_find.encode('utf-8'):
@@ -22,6 +24,7 @@ class Tree(object):
             if result:
                 return result
 
+
     def __find_tag(self, node, tag, result=[]):
         for child in node.children:
             if tag.encode('utf-8') in child.name:
@@ -31,37 +34,41 @@ class Tree(object):
         return result
 
 
+    def __write_to_file(self, destination, start, depth=0):
+        destination.write(start.exportable_format(depth))
+
+        for child in start.children:
+            self.__write_to_file(destination, child, depth+1)
+
+
     def build(self, input_file):
-        raw_tree = json.loads(input_file)
+        raw_tree = json.load(input_file)
         children_of_root = raw_tree['projectTreeData']['mainProjectTreeInfo']['rootProjectChildren']
 
         for child in children_of_root:
             self.__add_node(child, self.root)
 
-    def print_tree(self, start, depth, current_depth=0):
+
+    def print_subtree(self, start, depth, current_depth=0):
         print(start.printable_format(current_depth))
 
         if depth > current_depth:
             current_depth += 1
             for child in start.children:
-                self.print_tree(child, depth, current_depth)
+                self.print_subtree(child, depth, current_depth)
 
-    def print_subtree(self, name, depth):
+
+    def print_tree(self, name, depth):
         root = self.__find_node(self.root, name)
 
         if not root is None:
-            self.print_tree(root, depth)
+            self.print_subtree(root, depth)
 
-    def write_to_file(self, destination, start, depth=0):
-        destination.write(start.exportable_format(depth))
-
-        for child in start.children:
-            self.write_to_file(destination, child, depth+1)
 
     def export_tree(self, file_name):
-        destination = open(file_name, 'w')
-        self.write_to_file(destination, self.root)
-        destination.close()
+        with open(file_name, 'w') as destination:
+            self.__write_to_file(destination, self.root)
+
 
     def print_nodes_with_tag(self, tag):
         result = self.__find_tag(self.root, tag)
@@ -78,12 +85,14 @@ class Node(object):
         self.parent = parent
         self.children = []
 
+
     def add_child(self, child):
         self.children.append(child)
+
 
     def exportable_format(self, depth):
         return "{fill}{name}\n".format(fill='\t' * depth, name=self.name)
 
+
     def printable_format(self, depth=0):
         return "{fill}* {name}".format(fill='    ' * depth, name=self.name)
-
