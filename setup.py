@@ -4,7 +4,7 @@ import wfw
 setup(
     name='wfw',
     packages=['wfw'],
-    version='0.1',
+    version='0.1.1',
     description='command-line interface for WorkFlowy',
     author='Noemi Vanyi',
     author_email='sitbackandwait@gmail.com',
