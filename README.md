@@ -64,4 +64,4 @@ tag-to-find: name of tag to find
 
 ## Author
 
-Noemi Vanyi <sitbackandwait@gmail.com>
+Noemi Vanyi
