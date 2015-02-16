@@ -4,6 +4,12 @@ CLI for WorkFlowy inspired by [WWW::Workflowy](https://github.com/cotto/www-work
 
 WorkFlowy does not maintain an external API, so the cli can break anytime. Do not use it for anything mission critical.
 
+## Installation
+
+```
+pip install wfw
+```
+
 ##Commands
 
 #### wfw export <filename>
@@ -58,4 +64,4 @@ tag-to-find: name of tag to find
 
 ## Author
 
-Noemi Vanyi <sitbackandwait@gmail.com\>
+Noemi Vanyi <sitbackandwait@gmail.com>
