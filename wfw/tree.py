@@ -1,4 +1,5 @@
 import json
+from wfw.wfexceptions import NodeNotFoundError, InvalidTagFormatException
 
 class Tree(object):
 
@@ -15,23 +16,26 @@ class Tree(object):
                 self.__add_node(child, new_node)
 
 
-    def __find_node(self, node, name_to_find):
+    def find_node(self, node, name_to_find):
         if node.name == name_to_find.encode('utf-8'):
             return node
 
         for child in node.children:
-            result = self.__find_node(child, name_to_find)
+            result = self.find_node(child, name_to_find)
             if result:
                 return result
 
 
     def __find_tag(self, node, tag, result=[]):
-        for child in node.children:
-            if tag.encode('utf-8') in child.name:
-                result.append(child)
-            self.__find_tag(child, tag, result)
+        if tag[0] == '#' or tag[0] == '@':
+            for child in node.children:
+                if tag.encode('utf-8') in child.name:
+                    result.append(child)
+                self.__find_tag(child, tag, result)
 
-        return result
+            return result
+        else:
+            raise InvalidTagFormatException("Tag has to start with # or @")
 
 
     def __write_to_file(self, destination, start, depth=0):
@@ -59,10 +63,12 @@ class Tree(object):
 
 
     def print_tree(self, name, depth):
-        root = self.__find_node(self.root, name)
+        root = self.find_node(self.root, name)
 
         if not root is None:
             self.print_subtree(root, depth)
+        else:
+            raise NodeNotFoundError
 
 
     def export_tree(self, file_name):
@@ -71,7 +77,10 @@ class Tree(object):
 
 
     def print_nodes_with_tag(self, tag):
-        result = self.__find_tag(self.root, tag)
+        try:
+            result = self.__find_tag(self.root, tag)
+        except InvalidTagFormatException:
+            raise
 
         for node in result:
             print(node.printable_format())

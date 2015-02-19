@@ -2,4 +2,6 @@
 *.swp
 *.exported
 .tree
+build/*
+dist/*
 wfw/venv

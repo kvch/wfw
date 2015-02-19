@@ -1,14 +1,16 @@
 import click
-from wfw.wfexceptions import LoginFailedException
-from wfw.lib import fetch_list, export_list, print_list, search_tags
+from wfw.wfexceptions import (LoginFailedException,
+                              NodeNotFoundError,
+                              InvalidTagFormatException)
+from wfw.lib import fetch_list, export_list, print_list, search_tags, add_item
 
 @click.group()
 def cli():
     pass
 
 @cli.command()
-@click.option('--email', prompt=True)
-@click.option('--password', prompt=True, hide_input=True)
+@click.option('--email', default=None)
+@click.option('--password', default=None)
 def fetch(email, password):
     """Fetch list from WorkFlowy server"""
 
@@ -41,8 +43,24 @@ def show(level, root):
         print_list(level, root)
     except IOError:
         click.echo("You have no local tree")
+    except NodeNotFoundError:
+        click.echo("No such node")
     except Exception as ex:
         click.echo("Error while printing list: {msg}".format(msg=ex.message))
+
+
+@cli.command()
+@click.argument('parent-item')
+@click.argument('new-item')
+def add(parent_item, new_item):
+    """Add new item to list"""
+
+    try:
+        add_item(parent_item, new_item)
+    except IOError:
+        click.echo("Error while reading local tree")
+    except Exception as ex:
+        click.echo("Error while adding new item: {msg}".format(msg=ex.message))
 
 
 @cli.command()
@@ -54,5 +72,7 @@ def tag(tag_to_find):
         search_tags(tag_to_find)
     except IOError:
         click.echo("You have no local tree")
+    except InvalidTagFormatException as ex:
+        click.echo("Invalid tag format: {msg}".format(msg=ex.message))
     except Exception as ex:
         click.echo("Error while searching tag: {msg}".format(msg=ex.message))
