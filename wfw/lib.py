@@ -1,5 +1,4 @@
 from os.path import expanduser, isfile
-import json
 from ConfigParser import RawConfigParser
 from wfw.wfexceptions import LoginFailedException, NodeNotFoundError
 from wfw.api import log_in, log_out, get_list_from_server, post_new_item
@@ -44,9 +43,9 @@ def print_list(depth, root=None):
     tree = build_tree_from_file()
     try:
         if root is None:
-            tree.print_subtree(tree.root, depth)
+            tree.print_by_node(tree.root, depth)
         else:
-            tree.print_tree(root, depth)
+            tree.print_by_name(root, depth)
     except NodeNotFoundError:
         raise
 

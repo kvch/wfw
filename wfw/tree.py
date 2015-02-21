@@ -53,20 +53,20 @@ class Tree(object):
             self.__add_node(child, self.root)
 
 
-    def print_subtree(self, start, depth, current_depth=0):
+    def print_by_node(self, start, depth, current_depth=0):
         print(start.printable_format(current_depth))
 
         if depth > current_depth:
             current_depth += 1
             for child in start.children:
-                self.print_subtree(child, depth, current_depth)
+                self.print_by_node(child, depth, current_depth)
 
 
-    def print_tree(self, name, depth):
+    def print_by_name(self, name, depth):
         root = self.find_node(self.root, name)
 
         if not root is None:
-            self.print_subtree(root, depth)
+            self.print_by_node(root, depth)
         else:
             raise NodeNotFoundError
 
