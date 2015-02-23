@@ -7,6 +7,23 @@ class Tree(object):
         self.root = Node(0, 'My list', None)
 
 
+    def __eq__(self, other):
+        self.__eq_by_node(self.root, other.root)
+        return True
+
+
+    def __neq__(self, other):
+        return not self.__eq__(other)
+
+
+    def __eq_by_node(self, this_node, other_node):
+        if this_node != other_node:
+            return False
+
+        for i in range(len(this_node.children)):
+            self.__eq_by_node(this_node.children[i], other_node.children[i])
+
+
     def __add_node(self, node, parent):
         new_node = Node(node['id'], node['nm'].encode('utf-8'), parent)
         parent.add_child(new_node)
@@ -40,7 +57,6 @@ class Tree(object):
 
     def __write_to_file(self, destination, start, depth=0):
         destination.write(start.exportable_format(depth))
-
         for child in start.children:
             self.__write_to_file(destination, child, depth+1)
 
@@ -93,6 +109,25 @@ class Node(object):
         self.name = name
         self.parent = parent
         self.children = []
+
+    def __eq__(self, other):
+        if self.name != other.name:
+            return False
+        if self.node_id != other.node_id:
+            return False
+        if self.parent != other.parent:
+            return False
+        if len(self.children) != len(other.children):
+            return False
+        for i in range(len(self.children)):
+            if self.children[i] != other.children[i]:
+                return False
+
+        return True
+
+
+    def __neq__(self, other):
+        return not self.__eq__(other)
 
 
     def add_child(self, child):

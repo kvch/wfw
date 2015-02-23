@@ -1,5 +1,5 @@
 from io import BytesIO
-from mock import patch
+from mock import patch, Mock, mock_open, call
 from wfw.tree import Tree, Node
 import json
 import unittest
@@ -41,6 +41,39 @@ class TreeTest(unittest.TestCase):
         self.node2.add_child(self.node5)
         self.node5.add_child(self.node6)
 
+
+    def test_build(self):
+        mock_file = Mock(spec=file)
+        mock_file.read.return_value = self.tree_data
+        tree_built = Tree()
+        tree_built.build(mock_file)
+
+        self.assertEqual(tree_built, self.tree)
+
+
+    def test_export(self):
+        exported_tree = [call("My list\n"),
+                         call("\tnode1\n"),
+                         call("\tnode2\n"),
+                         call("\t\tnode4\n"),
+                         call("\t\tnode5\n"),
+                         call("\t\t\tnode6\n"),
+                         call("\tnode3\n")]
+
+        unexpected_tree = [call("My list\n"),
+                           call("\tnode2\n"),
+                           call("\t\tnode5\n"),
+                           call("\t\t\tnode6\n"),
+                           call("\tnode3\n")]
+
+        file_name = 'tree.exported'
+        mock_opener = mock_open()
+        with patch('wfw.tree.open', mock_opener, create=True):
+            self.tree.export_tree(file_name)
+
+        self.assertEqual(mock_opener().write.call_args_list, exported_tree)
+        self.assertNotEqual(mock_opener().write.call_args_list, unexpected_tree)
+        self.assertNotEqual(mock_opener().write.call_args_list, 'bad_output')
 
     def test_find_node(self):
         result = self.tree.find_node(self.tree.root, 'not_existent_node')
