@@ -4,7 +4,7 @@ import json
 import unittest
 
 from wfw.tree import Tree, Node
-from wfw.wfexceptions import InvalidTagFormatException
+from wfw.wfexceptions import InvalidTagFormatException, NodeNotFoundError
 
 class TreeTest(unittest.TestCase):
     def setUp(self):
@@ -108,6 +108,8 @@ class TreeTest(unittest.TestCase):
         with patch('sys.stdout', new=BytesIO()) as fakeout:
             self.tree.print_by_name('node2', 2)
             self.assertEqual(fakeout.getvalue(), expected_tree_without_limit)
+
+        self.assertRaises(NodeNotFoundError, self.tree.print_by_name, 'not_existent_node', 1)
 
 
     def test_print_by_node(self):

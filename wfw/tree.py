@@ -79,10 +79,10 @@ class Tree(object):
     def print_by_name(self, name, depth):
         root = self.find_node(self.root, name)
 
-        if not root is None:
-            self.print_by_node(root, depth)
-        else:
+        if root is None:
             raise NodeNotFoundError
+
+        self.print_by_node(root, depth)
 
 
     def export_tree(self, file_name):
