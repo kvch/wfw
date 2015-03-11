@@ -1,8 +1,10 @@
 from io import BytesIO
 from mock import patch, Mock, mock_open, call
-from wfw.tree import Tree, Node
 import json
 import unittest
+
+from wfw.tree import Tree, Node
+from wfw.wfexceptions import InvalidTagFormatException
 
 class TreeTest(unittest.TestCase):
     def setUp(self):
@@ -120,3 +122,15 @@ class TreeTest(unittest.TestCase):
         with patch('sys.stdout', new=BytesIO()) as fakeout:
             self.tree.print_by_node(self.tree.root, 3)
             self.assertEqual(fakeout.getvalue(), expected_tree)
+
+    def test_invalid_tag_format(self):
+        self.assertRaises(InvalidTagFormatException, self.tree.print_nodes_with_tag, 'cica')
+        self.assertRaises(InvalidTagFormatException, self.tree.print_nodes_with_tag, 'ci#ca')
+        self.assertRaises(InvalidTagFormatException, self.tree.print_nodes_with_tag, '%cica')
+        self.assertRaises(InvalidTagFormatException, self.tree.print_nodes_with_tag, '(cica)')
+        self.assertRaises(InvalidTagFormatException, self.tree.print_nodes_with_tag, '$cica')
+        self.assertRaises(InvalidTagFormatException, self.tree.print_nodes_with_tag, '!cica')
+        self.assertRaises(InvalidTagFormatException, self.tree.print_nodes_with_tag, 'cic@')
+        self.assertRaises(InvalidTagFormatException, self.tree.print_nodes_with_tag, '*cica')
+        self.assertRaises(InvalidTagFormatException, self.tree.print_nodes_with_tag, '&cica')
+        self.assertRaises(InvalidTagFormatException, self.tree.print_nodes_with_tag, '%cica')
