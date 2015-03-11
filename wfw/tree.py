@@ -51,8 +51,6 @@ class Tree(object):
                 self.__find_tag(child, tag, result)
 
             return result
-        else:
-            raise InvalidTagFormatException("Tag has to start with # or @")
 
 
     def __write_to_file(self, destination, start, depth=0):
@@ -93,10 +91,9 @@ class Tree(object):
 
 
     def print_nodes_with_tag(self, tag):
-        try:
-            result = self.__find_tag(self.root, tag)
-        except InvalidTagFormatException:
-            raise
+        result = self.__find_tag(self.root, tag)
+        if result is None:
+            raise InvalidTagFormatException("Tag has to start with # or @")
 
         for node in result:
             print(node.printable_format())
