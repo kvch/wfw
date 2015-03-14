@@ -126,13 +126,8 @@ class TreeTest(unittest.TestCase):
             self.assertEqual(fakeout.getvalue(), expected_tree)
 
     def test_invalid_tag_format(self):
-        self.assertRaises(InvalidTagFormatException, self.tree.print_nodes_with_tag, 'cica')
-        self.assertRaises(InvalidTagFormatException, self.tree.print_nodes_with_tag, 'ci#ca')
-        self.assertRaises(InvalidTagFormatException, self.tree.print_nodes_with_tag, '%cica')
-        self.assertRaises(InvalidTagFormatException, self.tree.print_nodes_with_tag, '(cica)')
-        self.assertRaises(InvalidTagFormatException, self.tree.print_nodes_with_tag, '$cica')
-        self.assertRaises(InvalidTagFormatException, self.tree.print_nodes_with_tag, '!cica')
-        self.assertRaises(InvalidTagFormatException, self.tree.print_nodes_with_tag, 'cic@')
-        self.assertRaises(InvalidTagFormatException, self.tree.print_nodes_with_tag, '*cica')
-        self.assertRaises(InvalidTagFormatException, self.tree.print_nodes_with_tag, '&cica')
-        self.assertRaises(InvalidTagFormatException, self.tree.print_nodes_with_tag, '%cica')
+        invalid_tags = ('cica', 'ci#ca', '%cica', '(cica)', '$cica', 
+                        '!cica', 'cic@', '*cica', '&cica', '%cica')
+
+        for tag in invalid_tags: 
+            self.assertRaises(InvalidTagFormatException, self.tree.print_nodes_with_tag, tag)
