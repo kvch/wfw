@@ -20,7 +20,6 @@ setup(
     install_requires=[
         'click',
         'requests',
-        'colorama',
     ],
     entry_points={
         'console_scripts' : [ 
