@@ -1,4 +1,5 @@
-from distutils.core import setup
+from setuptools import setup
+
 import wfw
 
 setup(
@@ -10,9 +11,16 @@ setup(
     author_email='sitbackandwait@gmail.com',
     url='https://github.com/kvch/wfw',
     download_url='https://github.com/kvch/wfw/tarball/0.1.3',
+    license='GNU General Public License v3',
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+        'Programming Language :: Python'
+    ],
     install_requires=[
         'click',
         'requests',
+        'colorama',
     ],
     entry_points={
         'console_scripts' : [ 
