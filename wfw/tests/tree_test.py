@@ -131,3 +131,22 @@ class TreeTest(unittest.TestCase):
 
         for tag in invalid_tags: 
             self.assertRaises(InvalidTagFormatException, self.tree.print_nodes_with_tag, tag)
+
+
+    def test_colored_output(self):
+        node_simple = Node(10, 'i am a simple node', None)
+        node_bold = Node(11, '<b>i am bold</b>', None)
+        node_bold_wannabe = Node(12, 'i wanna be bold</b>', None)
+        node_tagged_bang = Node(13, 'i am a node with a #tag', None)
+        node_tagged_at = Node(14, 'i am a node with a @tag', None)
+        node_bold_tagged = Node(15, '<b>i am so bold that i have a #tag</b>', None)
+        node_done = Node(15, 'i am done', None)
+        node_done.done = True
+
+        self.assertEquals('* i am a simple node', node_simple.printable_format())
+        self.assertEquals('\\033[1m* i am bold\\033[0m', node_bold.printable_format())
+        self.assertEquals('* i wanna be bold</b>', node_bold_wannabe.printable_format())
+        self.assertEquals('* i am a node with a \\033[33m#tag\\033[0m', node_tagged_bang.printable_format())
+        self.assertEquals('* i am a node with a \\033[33m@tag\\033[0m', node_tagged_at.printable_format())
+        self.assertEquals('\\033[1m* i am so bold that i have a \\033[33m#tag\\033[0m', node_bold_tagged.printable_format())
+        self.assertEquals('\\033[2m* i am done\\033[0m', node_done.printable_format())

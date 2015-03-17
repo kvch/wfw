@@ -1,5 +1,13 @@
 import json
+
 from wfw.wfexceptions import NodeNotFoundError, InvalidTagFormatException
+
+
+DIM = '\\033[2m'
+BRIGHT = '\\033[1m'
+YELLOW = '\\033[33m'
+END = '\\033[0m'
+
 
 class Tree(object):
 
@@ -106,6 +114,8 @@ class Node(object):
         self.name = name
         self.parent = parent
         self.children = []
+        self.done = False
+
 
     def __eq__(self, other):
         if self.name != other.name:
@@ -136,4 +146,24 @@ class Node(object):
 
 
     def printable_format(self, depth=0):
-        return "{fill}* {name}".format(fill='    ' * depth, name=self.name)
+        style = ''
+        end = ''
+        name = self.name
+
+        if '<b>' in self.name and '</b>' in self.name:
+            style = BRIGHT
+            name = name[3:-4]
+
+        if self.done:
+            style = DIM
+
+        for tag in ('@', '#'):
+            if tag in name:
+                index = name.index(tag)
+                name = name[:index] + YELLOW + name[index:]
+                end = END
+
+        if style != '':
+            end = END
+
+        return "{fill}{style}* {name}{end}".format(fill='    ' * depth, style=style, name=name, end=end)
