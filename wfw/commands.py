@@ -1,8 +1,9 @@
 import click
-from wfw.wfexceptions import (LoginFailedException,
-                              NodeNotFoundError,
-                              InvalidTagFormatException)
-from wfw.lib import fetch_list, export_list, print_list, search_tags, add_item
+from wfw.wfexceptions import (InvalidTagFormatException,
+                              LocalChangePostingError,
+                              LoginFailedException,
+                              NodeNotFoundError)
+from wfw.lib import fetch_list, export_list, print_list, search_tags, add_item, remove_item
 
 @click.group()
 def cli():
@@ -57,10 +58,28 @@ def add(parent_item, new_item):
 
     try:
         add_item(parent_item, new_item)
+    except LocalChangePostingError:
+        click.echo("Error while posting your change")
     except IOError:
         click.echo("Error while reading local tree")
     except Exception as ex:
         click.echo("Error while adding new item: {msg}".format(msg=ex.message))
+
+
+@cli.command()
+@click.argument('parent-item')
+@click.argument('deleted-item')
+def rm(parent_item, deleted_item):
+    """Remove item from list"""
+
+    try:
+        remove_item(parent_item, deleted_item)
+    except LocalChangePostingError:
+        click.echo("Error while posting your change")
+    except IOError:
+        click.echo("Error while reading local tree")
+    except Exception as ex:
+        click.echo("Error while removing item: {msg}".format(msg=ex.message))
 
 
 @cli.command()

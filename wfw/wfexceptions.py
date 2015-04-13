@@ -6,3 +6,6 @@ class NodeNotFoundError(Exception):
 
 class InvalidTagFormatException(Exception):
     pass
+
+class LocalChangePostingError(Exception):
+    pass

@@ -37,9 +37,43 @@ def get_list_from_server(session_id):
         json.dump(tree, tree_data)
 
 
-def post_new_item(parent_id, name, session_id):
+def prepare_new_item(parent_id, name, client_timestamp):
     new_id = str(uuid.uuid4())
 
+    new_node_place = {'projectid' : new_id,
+                      'parentid' : parent_id,
+                      'priority' : 999}
+
+    new_node_data = {'projectid' : new_id,
+                     'name' : name}
+
+    operation = [{'type' : 'create',
+                  'data' : new_node_place,
+                  'client_timestamp' : client_timestamp,
+                  'undo_data' : {}},
+                 {'type' : 'edit',
+                  'data' : new_node_data,
+                  'client_timestamp' : client_timestamp,
+                  'undo_data': {'previous_last_modified' : client_timestamp,
+                                'previous_name' : ''}}]
+
+    return operation
+
+
+def prepare_deleted_item(parent_id, deleted_id, client_timestamp):
+    deleted_node = {'projectid' : deleted_id}
+
+    operation = [{'type' : 'delete',
+                  'data' : deleted_node,
+                  'client_timestamp' : client_timestamp,
+                  'undo_data': {'previous_last_modified' : client_timestamp,
+                                'parentid' : parent_id,
+                                'priority' : 0}}]
+
+    return operation
+
+
+def post_local_change(session_id, operation, parent_id, name, deleted_id=None):
     with open(TREE_DATA, 'r') as tree_data:
         config = json.load(tree_data)
 
@@ -49,23 +83,15 @@ def post_new_item(parent_id, name, session_id):
 
     push_poll_id = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase) for _ in range(8))
 
-    new_node_place = {'projectid' : new_id,
-                      'parentid' : parent_id,
-                      'priority' : 999}
-
-    new_node_data = {'projectid' : new_id,
-                     'name' : name}
+    operation_data = []
+    if operation == 'add':
+        operation_data = prepare_new_item(parent_id, name, client_timestamp)
+    elif operation == 'rm':
+        operation_data = prepare_deleted_item(parent_id, deleted_id, client_timestamp)
 
     push_poll_data = [{'most_recent_operation_transaction_id' : most_recent_op,
-                       'operations' : [{'type' : 'create',
-                                        'data' : new_node_place,
-                                        'client_timestamp' : client_timestamp,
-                                        'undo_data' : {}},
-                                       {'type' : 'edit',
-                                        'data' : new_node_data,
-                                        'client_timestamp' : client_timestamp,
-                                        'undo_data': {'previous_last_modified' : client_timestamp,
-                                                      'previous_name' : ''}}]}]
+                       'operations' : operation_data}]
+
     push_poll_data = json.dumps(push_poll_data)
 
     payload = {'client_id' : client_id,
@@ -77,7 +103,5 @@ def post_new_item(parent_id, name, session_id):
 
     request = requests.post(WFURL + 'push_and_poll', data=payload, cookies=cookie)
 
-    if request.status_code == 200:
-        return new_id
-
-    return None
+    if request.status_code != 200:
+        raise LocalChangePostingError

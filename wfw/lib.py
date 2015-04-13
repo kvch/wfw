@@ -1,7 +1,7 @@
 from os.path import expanduser, isfile
 from ConfigParser import RawConfigParser
-from wfw.wfexceptions import LoginFailedException, NodeNotFoundError
-from wfw.api import log_in, log_out, get_list_from_server, post_new_item
+from wfw.wfexceptions import LoginFailedException, NodeNotFoundError, LocalChangePostingError
+from wfw.api import log_in, log_out, get_list_from_server, post_local_change
 from wfw.tree import Tree
 
 
@@ -59,10 +59,33 @@ def search_tags(tag):
     tree = build_tree_from_file()
     tree.print_nodes_with_tag(tag)
 
+
 def add_item(parent_item, new_item):
     tree = build_tree_from_file()
     parent_node = tree.find_node(tree.root, parent_item)
     user = get_user_data()
     session_id = log_in(user['email'], user['password'])
-    post_new_item(parent_node.node_id, new_item, session_id)
-    log_out(session_id)
+    try:
+        post_local_change(session_id, 'add', parent_node.node_id, new_item)
+    except LocalChangePostingError:
+        log_out(session_id)
+        raise
+    else:
+        get_list_from_server(session_id)
+        log_out(session_id)
+
+
+def remove_item(parent_item, deleted_item):
+    tree = build_tree_from_file()
+    parent_node = tree.find_node(tree.root, parent_item)
+    deleted_node = tree.find_node(tree.root, deleted_item)
+    user = get_user_data()
+    session_id = log_in(user['email'], user['password'])
+    try:
+        post_local_change(session_id, 'rm', parent_node.node_id, deleted_item, deleted_node.node_id)
+    except LocalChangePostingError:
+        log_out(session_id)
+        raise
+    else:
+        get_list_from_server(session_id)
+        log_out(session_id)
