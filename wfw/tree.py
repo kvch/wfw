@@ -33,7 +33,8 @@ class Tree(object):
 
 
     def __add_node(self, node, parent):
-        new_node = Node(node['id'], node['nm'].encode('utf-8'), parent)
+        is_done = 'cp' in node.keys()
+        new_node = Node(node['id'], node['nm'].encode('utf-8'), parent, is_done)
         parent.add_child(new_node)
 
         if 'ch' in node.keys():
@@ -109,18 +110,20 @@ class Tree(object):
 
 class Node(object):
 
-    def __init__(self, node_id, name, parent):
+    def __init__(self, node_id, name, parent, done=False):
         self.node_id = node_id
         self.name = name
+        self.done = done
         self.parent = parent
         self.children = []
-        self.done = False
 
 
     def __eq__(self, other):
         if self.name != other.name:
             return False
         if self.node_id != other.node_id:
+            return False
+        if self.done != other.done:
             return False
         if self.parent != other.parent:
             return False

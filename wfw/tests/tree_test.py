@@ -9,6 +9,7 @@ from wfw.wfexceptions import InvalidTagFormatException, NodeNotFoundError
 class TreeTest(unittest.TestCase):
     def setUp(self):
         self.list_item = [{'lm' : 999,
+                           'cp' : 999,
                            'nm' : 'node1',
                            'id' : '2342-1252333-4354-3451'},
                           {'lm' : 999,
@@ -30,7 +31,7 @@ class TreeTest(unittest.TestCase):
         self.tree_data = json.dumps(self.tree_data)
 
         self.tree = Tree()
-        self.node1 = Node('2342-1252333-4354-3451', 'node1', self.tree.root)
+        self.node1 = Node('2342-1252333-4354-3451', 'node1', self.tree.root, True)
         self.node2 = Node('2342-1252333-4354-3452', 'node2', self.tree.root)
         self.node3 = Node('2342-1252333-4354-3453', 'node3', self.tree.root)
         self.tree.root.add_child(self.node1)
@@ -114,7 +115,7 @@ class TreeTest(unittest.TestCase):
 
     def test_print_by_node(self):
         expected_tree = ("* My list\n"
-                         "    * node1\n"
+                         "    \\033[2m* node1\\033[0m\n"
                          "    * node2\n"
                          "        * node4\n"
                          "        * node5\n"
@@ -140,8 +141,7 @@ class TreeTest(unittest.TestCase):
         node_tagged_bang = Node(13, 'i am a node with a #tag', None)
         node_tagged_at = Node(14, 'i am a node with a @tag', None)
         node_bold_tagged = Node(15, '<b>i am so bold that i have a #tag</b>', None)
-        node_done = Node(15, 'i am done', None)
-        node_done.done = True
+        node_done = Node(15, 'i am done', None, True)
 
         self.assertEquals('* i am a simple node', node_simple.printable_format())
         self.assertEquals('\\033[1m* i am bold\\033[0m', node_bold.printable_format())
