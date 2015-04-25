@@ -10,15 +10,15 @@ def cli():
     pass
 
 @cli.command()
-@click.option('--email', default=None)
-@click.option('--password', default=None)
-def fetch(email, password):
+def fetch():
     """Fetch list from WorkFlowy server"""
 
     try:
-        fetch_list(email, password)
+        fetch_list()
     except LoginFailedException:
         click.echo("Unable to fetch your list: wrong e-mail or password.")
+    except IOError:
+        click.echo("Error while fetching: missing config")
 
 
 @cli.command()
@@ -73,8 +73,6 @@ def add(parent_item, new_item):
         add_item(parent_item, new_item)
     except LocalChangePostingError:
         click.echo("Error while posting your change")
-    except IOError:
-        click.echo("Error while reading local tree")
     except Exception as ex:
         click.echo("Error while adding new item: {msg}".format(msg=ex.message))
 
@@ -89,8 +87,6 @@ def rm(parent_item, deleted_item):
         remove_item(parent_item, deleted_item)
     except LocalChangePostingError:
         click.echo("Error while posting your change")
-    except IOError:
-        click.echo("Error while reading local tree")
     except Exception as ex:
         click.echo("Error while removing item: {msg}".format(msg=ex.message))
 

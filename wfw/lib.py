@@ -1,6 +1,6 @@
 from os.path import expanduser, isfile
 from ConfigParser import RawConfigParser
-from wfw.wfexceptions import LoginFailedException, NodeNotFoundError, LocalChangePostingError
+from wfw.wfexceptions import NodeNotFoundError, LocalChangePostingError
 from wfw.api import log_in, log_out, get_list_from_server, post_local_change
 from wfw.tree import build, print_by_node, print_by_name, print_node_list, export_tree, find_nodes, find_tag, get_node
 
@@ -16,22 +16,21 @@ def build_tree_from_file():
 
 
 def get_user_data():
-    configparser = RawConfigParser()
-    user_data = {}
-    with open(USER_DATA) as config:
-        configparser.readfp(config)
-    user_data['email'] = configparser.get('user', 'email')
-    user_data['password'] = configparser.get('user', 'password')
-    return user_data
-
-
-def fetch_list(email, password):
     if isfile(USER_DATA):
-        user_data = get_user_data()
-        email, password = user_data['email'], user_data['password']
+        configparser = RawConfigParser()
+        user_data = {}
+        with open(USER_DATA) as config:
+            configparser.readfp(config)
+        user_data['email'] = configparser.get('user', 'email')
+        user_data['password'] = configparser.get('user', 'password')
+        return user_data
+
+
+def fetch_list():
+    user = get_user_data()
     try:
-        session_id = log_in(email, password)
-    except LoginFailedException:
+        session_id = log_in(user['email'], user['password'])
+    except Exception:
         raise
     else:
         get_list_from_server(session_id)
@@ -70,11 +69,13 @@ def add_item(parent_item, new_item):
     build_tree_from_file()
     parent_node = get_node(ROOT, parent_item)
     user = get_user_data()
-    session_id = log_in(user['email'], user['password'])
     try:
+        session_id = log_in(user['email'], user['password'])
         post_local_change(session_id, 'add', parent_node['id'], new_item)
     except LocalChangePostingError:
         log_out(session_id)
+        raise
+    except Exception:
         raise
     else:
         get_list_from_server(session_id)
@@ -86,11 +87,13 @@ def remove_item(parent_item, deleted_item):
     parent_node = get_node(ROOT, parent_item)
     deleted_node = get_node(ROOT, deleted_item)
     user = get_user_data()
-    session_id = log_in(user['email'], user['password'])
     try:
+        session_id = log_in(user['email'], user['password'])
         post_local_change(session_id, 'rm', parent_node['id'], deleted_item, deleted_node['id'])
     except LocalChangePostingError:
         log_out(session_id)
+        raise
+    except Exception:
         raise
     else:
         get_list_from_server(session_id)
