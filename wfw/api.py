@@ -4,7 +4,7 @@ import uuid
 import random
 import string
 from os.path import expanduser
-from wfw.wfexceptions import LoginFailedException
+from wfw.wfexceptions import LoginFailedException, LocalChangePostingError
 
 
 WFURL = 'https://workflowy.com/'

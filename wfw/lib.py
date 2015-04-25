@@ -2,18 +2,17 @@ from os.path import expanduser, isfile
 from ConfigParser import RawConfigParser
 from wfw.wfexceptions import LoginFailedException, NodeNotFoundError, LocalChangePostingError
 from wfw.api import log_in, log_out, get_list_from_server, post_local_change
-from wfw.tree import Tree
+from wfw.tree import build, print_by_node, print_by_name, export_tree, print_nodes_with_tag, find_node
 
 
 TREE_DATA = expanduser('~/.wfwtree')
 USER_DATA = expanduser('~/.wfwrc')
+ROOT = {'id' : 0, 'text' : 'My list', 'children' : [], 'done' : False}
 
 
 def build_tree_from_file():
-    tree = Tree()
     with open(TREE_DATA, 'r') as tree_data:
-        tree.build(tree_data)
-    return tree
+        build(tree_data, ROOT)
 
 
 def get_user_data():
@@ -39,34 +38,34 @@ def fetch_list(email, password):
         log_out(session_id)
 
 
-def print_list(depth, root=None):
-    tree = build_tree_from_file()
+def print_list(depth, selected_root=None):
+    build_tree_from_file()
     try:
-        if root is None:
-            tree.print_by_node(tree.root, depth)
+        if selected_root is None:
+            print_by_node(ROOT, depth)
         else:
-            tree.print_by_name(root, depth)
+            print_by_name(selected_root, depth, ROOT)
     except NodeNotFoundError:
         raise
 
 
 def export_list(file_name):
-    tree = build_tree_from_file()
-    tree.export_tree(file_name)
+    build_tree_from_file()
+    export_tree(file_name, ROOT)
 
 
 def search_tags(tag):
-    tree = build_tree_from_file()
-    tree.print_nodes_with_tag(tag)
+    build_tree_from_file()
+    print_nodes_with_tag(ROOT, tag)
 
 
 def add_item(parent_item, new_item):
-    tree = build_tree_from_file()
-    parent_node = tree.find_node(tree.root, parent_item)
+    build_tree_from_file()
+    parent_node = find_node(ROOT, parent_item)
     user = get_user_data()
     session_id = log_in(user['email'], user['password'])
     try:
-        post_local_change(session_id, 'add', parent_node.node_id, new_item)
+        post_local_change(session_id, 'add', parent_node['id'], new_item)
     except LocalChangePostingError:
         log_out(session_id)
         raise
@@ -76,13 +75,13 @@ def add_item(parent_item, new_item):
 
 
 def remove_item(parent_item, deleted_item):
-    tree = build_tree_from_file()
-    parent_node = tree.find_node(tree.root, parent_item)
-    deleted_node = tree.find_node(tree.root, deleted_item)
+    build_tree_from_file()
+    parent_node = find_node(ROOT, parent_item)
+    deleted_node = find_node(ROOT, deleted_item)
     user = get_user_data()
     session_id = log_in(user['email'], user['password'])
     try:
-        post_local_change(session_id, 'rm', parent_node.node_id, deleted_item, deleted_node.node_id)
+        post_local_change(session_id, 'rm', parent_node['id'], deleted_item, deleted_node['id'])
     except LocalChangePostingError:
         log_out(session_id)
         raise

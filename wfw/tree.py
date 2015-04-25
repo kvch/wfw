@@ -6,167 +6,109 @@ from wfw.wfexceptions import NodeNotFoundError, InvalidTagFormatException
 DIM = '\\033[2m'
 BRIGHT = '\\033[1m'
 YELLOW = '\\033[33m'
+WHITE = '\\033[37m'
 END = '\\033[0m'
 
 
-class Tree(object):
+def add_node(node, parent):
+    is_done = 'cp' in node.keys()
+    new_node = {'id' : node['id'], 'text' :node['nm'].encode('utf-8'), 'children' : [], 'done' : is_done}
+    parent['children'].append(new_node)
 
-    def __init__(self):
-        self.root = Node(0, 'My list', None)
-
-
-    def __eq__(self, other):
-        self.__eq_by_node(self.root, other.root)
-        return True
-
-
-    def __neq__(self, other):
-        return not self.__eq__(other)
+    if 'ch' in node.keys():
+        for child in node['ch']:
+            add_node(child, new_node)
 
 
-    def __eq_by_node(self, this_node, other_node):
-        if this_node != other_node:
-            return False
+def build(input_file, root):
+    raw_tree = json.load(input_file)
+    children_of_root = raw_tree['projectTreeData']['mainProjectTreeInfo']['rootProjectChildren']
 
-        for i in range(len(this_node.children)):
-            self.__eq_by_node(this_node.children[i], other_node.children[i])
-
-
-    def __add_node(self, node, parent):
-        is_done = 'cp' in node.keys()
-        new_node = Node(node['id'], node['nm'].encode('utf-8'), parent, is_done)
-        parent.add_child(new_node)
-
-        if 'ch' in node.keys():
-            for child in node['ch']:
-                self.__add_node(child, new_node)
+    for child in children_of_root:
+        add_node(child, root)
 
 
-    def find_node(self, node, name_to_find):
-        if node.name == name_to_find.encode('utf-8'):
-            return node
+def find_node(node, text_to_find):
+    if node['text'] == text_to_find.encode('utf-8'):
+        return node
 
-        for child in node.children:
-            result = self.find_node(child, name_to_find)
-            if result:
-                return result
-
-
-    def __find_tag(self, node, tag, result=[]):
-        if tag[0] == '#' or tag[0] == '@':
-            for child in node.children:
-                if tag.encode('utf-8') in child.name:
-                    result.append(child)
-                self.__find_tag(child, tag, result)
-
+    for child in node['children']:
+        result = find_node(child, text_to_find)
+        if result:
             return result
 
 
-    def __write_to_file(self, destination, start, depth=0):
-        destination.write(start.exportable_format(depth))
-        for child in start.children:
-            self.__write_to_file(destination, child, depth+1)
+def find_tag(node, tag, result=[]):
+    if tag[0] == '#' or tag[0] == '@':
+        for child in node['children']:
+            if tag.encode('utf-8') in child['text']:
+                result.append(child)
+            find_tag(child, tag, result)
+
+        return result
 
 
-    def build(self, input_file):
-        raw_tree = json.load(input_file)
-        children_of_root = raw_tree['projectTreeData']['mainProjectTreeInfo']['rootProjectChildren']
-
-        for child in children_of_root:
-            self.__add_node(child, self.root)
+def write_to_file(destination, start, depth=0):
+    destination.write(exportable_format(start, depth))
+    for child in start['children']:
+        write_to_file(destination, child, depth+1)
 
 
-    def print_by_node(self, start, depth, current_depth=0):
-        print(start.printable_format(current_depth))
-
-        if depth > current_depth:
-            current_depth += 1
-            for child in start.children:
-                self.print_by_node(child, depth, current_depth)
+def export_tree(file_name, root):
+    with open(file_name, 'w') as destination:
+        write_to_file(destination, root)
 
 
-    def print_by_name(self, name, depth):
-        root = self.find_node(self.root, name)
+def print_by_node(start, depth, current_depth=0):
+    print(printable_format(start, current_depth))
 
-        if root is None:
-            raise NodeNotFoundError
-
-        self.print_by_node(root, depth)
-
-
-    def export_tree(self, file_name):
-        with open(file_name, 'w') as destination:
-            self.__write_to_file(destination, self.root)
+    if depth > current_depth:
+        current_depth += 1
+        for child in start['children']:
+            print_by_node(child, depth, current_depth)
 
 
-    def print_nodes_with_tag(self, tag):
-        result = self.__find_tag(self.root, tag)
-        if result is None:
-            raise InvalidTagFormatException("Tag has to start with # or @")
+def print_by_name(name, depth, root):
+    selected_root = find_node(root, name)
 
-        for node in result:
-            print(node.printable_format())
+    if selected_root is None:
+        raise NodeNotFoundError
 
-
-class Node(object):
-
-    def __init__(self, node_id, name, parent, done=False):
-        self.node_id = node_id
-        self.name = name
-        self.done = done
-        self.parent = parent
-        self.children = []
+    print_by_node(selected_root, depth)
 
 
-    def __eq__(self, other):
-        if self.name != other.name:
-            return False
-        if self.node_id != other.node_id:
-            return False
-        if self.done != other.done:
-            return False
-        if self.parent != other.parent:
-            return False
-        if len(self.children) != len(other.children):
-            return False
-        for i in range(len(self.children)):
-            if self.children[i] != other.children[i]:
-                return False
+def print_nodes_with_tag(root, tag):
+    result = find_tag(root, tag)
+    if result is None:
+        raise InvalidTagFormatException("Tag has to start with # or @")
 
-        return True
+    for node in result:
+        print(printable_format(node))
 
 
-    def __neq__(self, other):
-        return not self.__eq__(other)
+def exportable_format(node, depth):
+    return "{fill}{name}\n".format(fill='\t' * depth, name=node['text'])
 
 
-    def add_child(self, child):
-        self.children.append(child)
+def printable_format(node, depth=0):
+    style = ''
+    end = ''
+    name = node['text']
 
+    if '<b>' in node['text'] and '</b>' in node['text']:
+        style = BRIGHT
+        name = name[3:-4]
 
-    def exportable_format(self, depth):
-        return "{fill}{name}\n".format(fill='\t' * depth, name=self.name)
+    if node['done']:
+        style = DIM
 
-
-    def printable_format(self, depth=0):
-        style = ''
-        end = ''
-        name = self.name
-
-        if '<b>' in self.name and '</b>' in self.name:
-            style = BRIGHT
-            name = name[3:-4]
-
-        if self.done:
-            style = DIM
-
-        for tag in ('@', '#'):
-            if tag in name:
-                index = name.index(tag)
-                name = name[:index] + YELLOW + name[index:]
-                end = END
-
-        if style != '':
+    for tag in ('@', '#'):
+        if tag in name:
+            index = name.index(tag)
+            name = name[:index] + YELLOW + name[index:]
             end = END
 
-        return "{fill}{style}* {name}{end}".format(fill='    ' * depth, style=style, name=name, end=end)
+    if style != '':
+        end = END
+
+    return "{fill}{style}* {name}{end}".format(fill='    ' * depth, style=style, name=name, end=end)

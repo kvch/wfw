@@ -3,7 +3,7 @@ from mock import patch, Mock, mock_open, call
 import json
 import unittest
 
-from wfw.tree import Tree, Node
+from wfw.tree import build, export_tree, find_node, print_by_name, print_by_node, printable_format, print_nodes_with_tag, find_tag
 from wfw.wfexceptions import InvalidTagFormatException, NodeNotFoundError
 
 class TreeTest(unittest.TestCase):
@@ -17,41 +17,41 @@ class TreeTest(unittest.TestCase):
                            'id' : '2342-1252333-4354-3452',
                            'ch' : [{'lm' : 888,
                                     'nm' : 'node4',
-                                    'id' : '2342-1252333-4354-3452'},
+                                    'id' : '2342-1252333-4354-3454'},
                                    {'lm' : 888,
                                     'nm' : 'node5',
-                                    'id' : '2342-1252333-4354-3452',
+                                    'id' : '2342-1252333-4354-3455',
                                     'ch' : [{'lm' : 777,
                                              'nm' : 'node6',
-                                             'id' : '2342-1252333-4354-3452'}]}]},
+                                             'id' : '2342-1252333-4354-3456'}]}]},
                           {'lm' : 999,
                            'nm' : 'node3',
                            'id' : '2342-1252333-4354-3453'}]
         self.tree_data = {'projectTreeData' : {'mainProjectTreeInfo' : {'rootProjectChildren' : self.list_item}}}
         self.tree_data = json.dumps(self.tree_data)
 
-        self.tree = Tree()
-        self.node1 = Node('2342-1252333-4354-3451', 'node1', self.tree.root, True)
-        self.node2 = Node('2342-1252333-4354-3452', 'node2', self.tree.root)
-        self.node3 = Node('2342-1252333-4354-3453', 'node3', self.tree.root)
-        self.tree.root.add_child(self.node1)
-        self.tree.root.add_child(self.node2)
-        self.tree.root.add_child(self.node3)
-        self.node4 = Node('2342-1252333-4354-3454', 'node4', self.node2)
-        self.node5 = Node('2342-1252333-4354-3455', 'node5', self.node2)
-        self.node6 = Node('2342-1252333-4354-3456', 'node6', self.node5)
-        self.node2.add_child(self.node4)
-        self.node2.add_child(self.node5)
-        self.node5.add_child(self.node6)
+        self.root = {'id' : 0, 'text' : 'My list', 'children' : [], 'done' : False}
+        self.node1 = {'id' : '2342-1252333-4354-3451', 'text' : 'node1', 'children' : [], 'done' : True}
+        self.node2 = {'id' : '2342-1252333-4354-3452', 'text' : 'node2', 'children' : [], 'done' : False}
+        self.node3 = {'id' : '2342-1252333-4354-3453', 'text' : 'node3', 'children' : [], 'done' : False}
+        self.root['children'].append(self.node1)
+        self.root['children'].append(self.node2)
+        self.root['children'].append(self.node3)
+        self.node4 = {'id' : '2342-1252333-4354-3454', 'text' : 'node4', 'children' : [], 'done' : False}
+        self.node5 = {'id' : '2342-1252333-4354-3455', 'text' : 'node5', 'children' : [], 'done' : False}
+        self.node6 = {'id' : '2342-1252333-4354-3456', 'text' : 'node6', 'children' : [], 'done' : False}
+        self.node2['children'].append(self.node4)
+        self.node2['children'].append(self.node5)
+        self.node5['children'].append(self.node6)
 
 
     def test_build(self):
         mock_file = Mock(spec=file)
         mock_file.read.return_value = self.tree_data
-        tree_built = Tree()
-        tree_built.build(mock_file)
+        result = {'id' : 0, 'text' : 'My list', 'children' : [], 'done' : False}
+        build(mock_file, result)
 
-        self.assertEqual(tree_built, self.tree)
+        self.assertEqual(result, self.root)
 
 
     def test_export(self):
@@ -72,23 +72,23 @@ class TreeTest(unittest.TestCase):
         file_name = 'tree.exported'
         mock_opener = mock_open()
         with patch('wfw.tree.open', mock_opener, create=True):
-            self.tree.export_tree(file_name)
+            export_tree(file_name, self.root)
 
         self.assertEqual(mock_opener().write.call_args_list, exported_tree)
         self.assertNotEqual(mock_opener().write.call_args_list, unexpected_tree)
         self.assertNotEqual(mock_opener().write.call_args_list, 'bad_output')
 
     def test_find_node(self):
-        result = self.tree.find_node(self.tree.root, 'not_existent_node')
+        result = find_node(self.root, 'not_existent_node')
         self.assertEqual(result, None)
 
-        result = self.tree.find_node(self.tree.root, 'My list')
-        self.assertEqual(result, self.tree.root)
+        result = find_node(self.root, 'My list')
+        self.assertEqual(result, self.root)
 
-        result = self.tree.find_node(self.tree.root, 'node2')
+        result = find_node(self.root, 'node2')
         self.assertEqual(result, self.node2)
 
-        result = self.tree.find_node(self.tree.root, 'node6')
+        result = find_node(self.root, 'node6')
         self.assertEqual(result, self.node6)
 
 
@@ -103,14 +103,14 @@ class TreeTest(unittest.TestCase):
                                        "        * node6\n")
 
         with patch('sys.stdout', new=BytesIO()) as fakeout:
-            self.tree.print_by_name('node2', 1)
+            print_by_name('node2', 1, self.root)
             self.assertEqual(fakeout.getvalue(), expected_tree_depth_limited)
 
         with patch('sys.stdout', new=BytesIO()) as fakeout:
-            self.tree.print_by_name('node2', 2)
+            print_by_name('node2', 2, self.root)
             self.assertEqual(fakeout.getvalue(), expected_tree_without_limit)
 
-        self.assertRaises(NodeNotFoundError, self.tree.print_by_name, 'not_existent_node', 1)
+        self.assertRaises(NodeNotFoundError, print_by_name, 'not_existent_node', 1, self.root)
 
 
     def test_print_by_node(self):
@@ -123,30 +123,39 @@ class TreeTest(unittest.TestCase):
                          "    * node3\n")
 
         with patch('sys.stdout', new=BytesIO()) as fakeout:
-            self.tree.print_by_node(self.tree.root, 3)
+            print_by_node(self.root, 3)
             self.assertEqual(fakeout.getvalue(), expected_tree)
 
     def test_invalid_tag_format(self):
-        invalid_tags = ('cica', 'ci#ca', '%cica', '(cica)', '$cica', 
+        invalid_tags = ('cica', 'ci#ca', '%cica', '(cica)', '$cica',
                         '!cica', 'cic@', '*cica', '&cica', '%cica')
 
-        for tag in invalid_tags: 
-            self.assertRaises(InvalidTagFormatException, self.tree.print_nodes_with_tag, tag)
+        for tag in invalid_tags:
+            self.assertRaises(InvalidTagFormatException, print_nodes_with_tag, self.root, tag)
 
+    def test_find_tag(self):
+        root = {'id' : 0, 'text' : 'My list', 'children' : []}
+        with_tag  = {'id' : 1, 'text' : 'Pretty little node with a #tag', 'children' : []}
+        without_tag  = {'id' : 2, 'text' : 'Pretty little node without a tag', 'children' : []}
+        root['children'].append(without_tag)
+        without_tag['children'].append(with_tag)
+
+        self.assertEqual(find_tag(root, '#tag'), [with_tag])
+        self.assertEqual(find_tag(root, 'tag'), None)
 
     def test_colored_output(self):
-        node_simple = Node(10, 'i am a simple node', None)
-        node_bold = Node(11, '<b>i am bold</b>', None)
-        node_bold_wannabe = Node(12, 'i wanna be bold</b>', None)
-        node_tagged_bang = Node(13, 'i am a node with a #tag', None)
-        node_tagged_at = Node(14, 'i am a node with a @tag', None)
-        node_bold_tagged = Node(15, '<b>i am so bold that i have a #tag</b>', None)
-        node_done = Node(15, 'i am done', None, True)
+        node_simple = {'id' : 10, 'text' : 'i am a simple node', 'done' : False}
+        node_bold = {'id' : 11, 'text' : '<b>i am bold</b>', 'done' : False}
+        node_bold_wannabe = {'id' : 12, 'text' : 'i wanna be bold</b>', 'done' : False}
+        node_tagged_bang = {'id' : 13, 'text' : 'i am a node with a #tag', 'done' : False}
+        node_tagged_at = {'id' : 14, 'text' : 'i am a node with a @tag', 'done' : False}
+        node_bold_tagged = {'id' : 15, 'text' : '<b>i am so bold that i have a #tag</b>', 'done' : False}
+        node_done = {'id' : 15, 'text' : 'i am done', 'done' : True}
 
-        self.assertEquals('* i am a simple node', node_simple.printable_format())
-        self.assertEquals('\\033[1m* i am bold\\033[0m', node_bold.printable_format())
-        self.assertEquals('* i wanna be bold</b>', node_bold_wannabe.printable_format())
-        self.assertEquals('* i am a node with a \\033[33m#tag\\033[0m', node_tagged_bang.printable_format())
-        self.assertEquals('* i am a node with a \\033[33m@tag\\033[0m', node_tagged_at.printable_format())
-        self.assertEquals('\\033[1m* i am so bold that i have a \\033[33m#tag\\033[0m', node_bold_tagged.printable_format())
-        self.assertEquals('\\033[2m* i am done\\033[0m', node_done.printable_format())
+        self.assertEquals('* i am a simple node', printable_format(node_simple))
+        self.assertEquals('\\033[1m* i am bold\\033[0m', printable_format(node_bold))
+        self.assertEquals('* i wanna be bold</b>', printable_format(node_bold_wannabe))
+        self.assertEquals('* i am a node with a \\033[33m#tag\\033[0m', printable_format(node_tagged_bang))
+        self.assertEquals('* i am a node with a \\033[33m@tag\\033[0m', printable_format(node_tagged_at))
+        self.assertEquals('\\033[1m* i am so bold that i have a \\033[33m#tag\\033[0m', printable_format(node_bold_tagged))
+        self.assertEquals('\\033[2m* i am done\\033[0m', printable_format(node_done))
