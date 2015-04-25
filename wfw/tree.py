@@ -1,4 +1,5 @@
 import json
+import re
 
 from wfw.wfexceptions import NodeNotFoundError, InvalidTagFormatException
 
@@ -12,7 +13,7 @@ END = '\\033[0m'
 
 def add_node(node, parent):
     is_done = 'cp' in node.keys()
-    new_node = {'id' : node['id'], 'text' :node['nm'].encode('utf-8'), 'children' : [], 'done' : is_done}
+    new_node = {'id' : node['id'], 'text' : node['nm'].encode('utf-8'), 'children' : [], 'done' : is_done, 'parent' : parent['text']}
     parent['children'].append(new_node)
 
     if 'ch' in node.keys():
@@ -28,14 +29,24 @@ def build(input_file, root):
         add_node(child, root)
 
 
-def find_node(node, text_to_find):
+def get_node(node, text_to_find):
     if node['text'] == text_to_find.encode('utf-8'):
         return node
 
     for child in node['children']:
-        result = find_node(child, text_to_find)
+        result = get_node(child, text_to_find)
         if result:
             return result
+
+
+def find_nodes(node, text_to_find, result=[]):
+    pattern = re.compile(text_to_find)
+    for child in node['children']:
+        if pattern.match(child['text']):
+            result.append(child)
+        find_nodes(child, text_to_find, result)
+
+    return result
 
 
 def find_tag(node, tag, result=[]):
@@ -46,6 +57,7 @@ def find_tag(node, tag, result=[]):
             find_tag(child, tag, result)
 
         return result
+    raise InvalidTagFormatException
 
 
 def write_to_file(destination, start, depth=0):
@@ -69,7 +81,7 @@ def print_by_node(start, depth, current_depth=0):
 
 
 def print_by_name(name, depth, root):
-    selected_root = find_node(root, name)
+    selected_root = get_node(root, name)
 
     if selected_root is None:
         raise NodeNotFoundError
@@ -77,13 +89,9 @@ def print_by_name(name, depth, root):
     print_by_node(selected_root, depth)
 
 
-def print_nodes_with_tag(root, tag):
-    result = find_tag(root, tag)
-    if result is None:
-        raise InvalidTagFormatException("Tag has to start with # or @")
-
-    for node in result:
-        print(printable_format(node))
+def print_node_list(nodelist):
+    for node in nodelist:
+        print("{}\n    parent: {}".format(printable_format(node), node['parent']))
 
 
 def exportable_format(node, depth):

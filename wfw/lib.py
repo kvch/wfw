@@ -2,7 +2,7 @@ from os.path import expanduser, isfile
 from ConfigParser import RawConfigParser
 from wfw.wfexceptions import LoginFailedException, NodeNotFoundError, LocalChangePostingError
 from wfw.api import log_in, log_out, get_list_from_server, post_local_change
-from wfw.tree import build, print_by_node, print_by_name, export_tree, print_nodes_with_tag, find_node
+from wfw.tree import build, print_by_node, print_by_name, print_node_list, export_tree, find_nodes, find_tag
 
 
 TREE_DATA = expanduser('~/.wfwtree')
@@ -54,9 +54,16 @@ def export_list(file_name):
     export_tree(file_name, ROOT)
 
 
+def search_nodes(pattern):
+    build_tree_from_file()
+    result = find_nodes(ROOT, regex)
+    print_node_list(result)
+
+
 def search_tags(tag):
     build_tree_from_file()
-    print_nodes_with_tag(ROOT, tag)
+    result = find_tag(ROOT, tag)
+    print_node_list(result) 
 
 
 def add_item(parent_item, new_item):

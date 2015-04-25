@@ -3,7 +3,7 @@ from wfw.wfexceptions import (InvalidTagFormatException,
                               LocalChangePostingError,
                               LoginFailedException,
                               NodeNotFoundError)
-from wfw.lib import fetch_list, export_list, print_list, search_tags, add_item, remove_item
+from wfw.lib import fetch_list, export_list, print_list, search_tags, search_nodes, add_item, remove_item
 
 @click.group()
 def cli():
@@ -46,6 +46,19 @@ def show(level, root):
         click.echo("You have no local tree")
     except NodeNotFoundError:
         click.echo("No such node")
+    except Exception as ex:
+        click.echo("Error while printing list: {msg}".format(msg=ex.message))
+
+
+@cli.command()
+@click.argument('pattern')
+def find(pattern):
+    """Find items using pattern matching"""
+
+    try:
+        search_nodes(pattern)
+    except IOError:
+        click.echo("You have no local tree")
     except Exception as ex:
         click.echo("Error while printing list: {msg}".format(msg=ex.message))
 

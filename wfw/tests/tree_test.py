@@ -3,7 +3,8 @@ from mock import patch, Mock, mock_open, call
 import json
 import unittest
 
-from wfw.tree import build, export_tree, find_node, print_by_name, print_by_node, printable_format, print_nodes_with_tag, find_tag
+from wfw.tree import (build, export_tree, get_node, print_by_name, print_by_node, printable_format, find_tag,
+                      find_nodes)
 from wfw.wfexceptions import InvalidTagFormatException, NodeNotFoundError
 
 class TreeTest(unittest.TestCase):
@@ -31,15 +32,15 @@ class TreeTest(unittest.TestCase):
         self.tree_data = json.dumps(self.tree_data)
 
         self.root = {'id' : 0, 'text' : 'My list', 'children' : [], 'done' : False}
-        self.node1 = {'id' : '2342-1252333-4354-3451', 'text' : 'node1', 'children' : [], 'done' : True}
-        self.node2 = {'id' : '2342-1252333-4354-3452', 'text' : 'node2', 'children' : [], 'done' : False}
-        self.node3 = {'id' : '2342-1252333-4354-3453', 'text' : 'node3', 'children' : [], 'done' : False}
+        self.node1 = {'id' : '2342-1252333-4354-3451', 'text' : 'node1', 'children' : [], 'done' : True, 'parent' : 'My list'}
+        self.node2 = {'id' : '2342-1252333-4354-3452', 'text' : 'node2', 'children' : [], 'done' : False, 'parent' : 'My list'}
+        self.node3 = {'id' : '2342-1252333-4354-3453', 'text' : 'node3', 'children' : [], 'done' : False, 'parent' : 'My list'}
         self.root['children'].append(self.node1)
         self.root['children'].append(self.node2)
         self.root['children'].append(self.node3)
-        self.node4 = {'id' : '2342-1252333-4354-3454', 'text' : 'node4', 'children' : [], 'done' : False}
-        self.node5 = {'id' : '2342-1252333-4354-3455', 'text' : 'node5', 'children' : [], 'done' : False}
-        self.node6 = {'id' : '2342-1252333-4354-3456', 'text' : 'node6', 'children' : [], 'done' : False}
+        self.node4 = {'id' : '2342-1252333-4354-3454', 'text' : 'node4', 'children' : [], 'done' : False, 'parent' : 'node2'}
+        self.node5 = {'id' : '2342-1252333-4354-3455', 'text' : 'node5', 'children' : [], 'done' : False, 'parent' : 'node2'}
+        self.node6 = {'id' : '2342-1252333-4354-3456', 'text' : 'node6', 'children' : [], 'done' : False, 'parent' : 'node5'}
         self.node2['children'].append(self.node4)
         self.node2['children'].append(self.node5)
         self.node5['children'].append(self.node6)
@@ -78,19 +79,22 @@ class TreeTest(unittest.TestCase):
         self.assertNotEqual(mock_opener().write.call_args_list, unexpected_tree)
         self.assertNotEqual(mock_opener().write.call_args_list, 'bad_output')
 
-    def test_find_node(self):
-        result = find_node(self.root, 'not_existent_node')
+    def test_get_node(self):
+        result = get_node(self.root, 'not_existent_node')
         self.assertEqual(result, None)
 
-        result = find_node(self.root, 'My list')
+        result = get_node(self.root, 'My list')
         self.assertEqual(result, self.root)
 
-        result = find_node(self.root, 'node2')
+        result = get_node(self.root, 'node2')
         self.assertEqual(result, self.node2)
 
-        result = find_node(self.root, 'node6')
+        result = get_node(self.root, 'node6')
         self.assertEqual(result, self.node6)
 
+    def test_find_nodes(self):
+        result = find_nodes(self.root, 'no*')
+        self.assertItemsEqual(result, [self.node1, self.node2, self.node3, self.node4, self.node5, self.node6])
 
     def test_print_by_name(self):
         expected_tree_depth_limited = ("* node2\n"
@@ -126,12 +130,6 @@ class TreeTest(unittest.TestCase):
             print_by_node(self.root, 3)
             self.assertEqual(fakeout.getvalue(), expected_tree)
 
-    def test_invalid_tag_format(self):
-        invalid_tags = ('cica', 'ci#ca', '%cica', '(cica)', '$cica',
-                        '!cica', 'cic@', '*cica', '&cica', '%cica')
-
-        for tag in invalid_tags:
-            self.assertRaises(InvalidTagFormatException, print_nodes_with_tag, self.root, tag)
 
     def test_find_tag(self):
         root = {'id' : 0, 'text' : 'My list', 'children' : []}
@@ -141,7 +139,12 @@ class TreeTest(unittest.TestCase):
         without_tag['children'].append(with_tag)
 
         self.assertEqual(find_tag(root, '#tag'), [with_tag])
-        self.assertEqual(find_tag(root, 'tag'), None)
+
+        invalid_tags = ('cica', 'ci#ca', '%cica', '(cica)', '$cica',
+                        '!cica', 'cic@', '*cica', '&cica', '%cica')
+
+        for tag in invalid_tags:
+            self.assertRaises(InvalidTagFormatException, find_tag, self.root, tag)
 
     def test_colored_output(self):
         node_simple = {'id' : 10, 'text' : 'i am a simple node', 'done' : False}
