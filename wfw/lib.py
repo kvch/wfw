@@ -2,7 +2,7 @@ from os.path import expanduser, isfile
 from ConfigParser import RawConfigParser
 from wfw.wfexceptions import LoginFailedException, NodeNotFoundError, LocalChangePostingError
 from wfw.api import log_in, log_out, get_list_from_server, post_local_change
-from wfw.tree import build, print_by_node, print_by_name, print_node_list, export_tree, find_nodes, find_tag
+from wfw.tree import build, print_by_node, print_by_name, print_node_list, export_tree, find_nodes, find_tag, get_node
 
 
 TREE_DATA = expanduser('~/.wfwtree')
@@ -56,19 +56,19 @@ def export_list(file_name):
 
 def search_nodes(pattern):
     build_tree_from_file()
-    result = find_nodes(ROOT, regex)
+    result = find_nodes(ROOT, pattern)
     print_node_list(result)
 
 
 def search_tags(tag):
     build_tree_from_file()
     result = find_tag(ROOT, tag)
-    print_node_list(result) 
+    print_node_list(result)
 
 
 def add_item(parent_item, new_item):
     build_tree_from_file()
-    parent_node = find_node(ROOT, parent_item)
+    parent_node = get_node(ROOT, parent_item)
     user = get_user_data()
     session_id = log_in(user['email'], user['password'])
     try:
@@ -83,8 +83,8 @@ def add_item(parent_item, new_item):
 
 def remove_item(parent_item, deleted_item):
     build_tree_from_file()
-    parent_node = find_node(ROOT, parent_item)
-    deleted_node = find_node(ROOT, deleted_item)
+    parent_node = get_node(ROOT, parent_item)
+    deleted_node = get_node(ROOT, deleted_item)
     user = get_user_data()
     session_id = log_in(user['email'], user['password'])
     try:
