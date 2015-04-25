@@ -1,10 +1,9 @@
 from io import BytesIO
-from mock import patch, Mock, mock_open, call
+from mock import call, Mock, mock_open, patch
 import json
 import unittest
 
-from wfw.tree import (build, export_tree, get_node, print_by_name, print_by_node, printable_format, find_tag,
-                      find_nodes)
+from wfw.tree import build, export_tree, find_tag, find_nodes, get_node, print_by_name, print_by_node, printable_format
 from wfw.wfexceptions import InvalidTagFormatException, NodeNotFoundError
 
 class TreeTest(unittest.TestCase):

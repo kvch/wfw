@@ -1,8 +1,9 @@
-from os.path import expanduser, isfile
 from ConfigParser import RawConfigParser
-from wfw.wfexceptions import NodeNotFoundError, LocalChangePostingError
+from os.path import expanduser, isfile
+
 from wfw.api import log_in, log_out, get_list_from_server, post_local_change
-from wfw.tree import build, print_by_node, print_by_name, print_node_list, export_tree, find_nodes, find_tag, get_node
+from wfw.tree import build, export_tree, find_nodes, find_tag, get_node, print_by_name, print_by_node, print_node_list
+from wfw.wfexceptions import LocalChangePostingError, NodeNotFoundError
 
 
 TREE_DATA = expanduser('~/.wfwtree')

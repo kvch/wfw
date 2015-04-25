@@ -1,9 +1,10 @@
-import requests
-import json
-import uuid
-import random
-import string
 from os.path import expanduser
+import json
+import random
+import requests
+import string
+import uuid
+
 from wfw.wfexceptions import LoginFailedException, LocalChangePostingError
 
 
