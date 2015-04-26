@@ -4,11 +4,11 @@ import re
 from wfw.wfexceptions import NodeNotFoundError, InvalidTagFormatException
 
 
-DIM = '\\033[2m'
-BRIGHT = '\\033[1m'
-YELLOW = '\\033[33m'
-WHITE = '\\033[37m'
-END = '\\033[0m'
+DIM = '\033[2m'
+BRIGHT = '\033[1m'
+YELLOW = '\033[33m'
+WHITE = '\033[37m'
+END = '\033[0m'
 
 
 def add_node(node, parent):
