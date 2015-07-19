@@ -118,7 +118,7 @@ class TreeTest(unittest.TestCase):
 
     def test_print_by_node(self):
         expected_tree = ("* My list\n"
-                         "    \033[2m* node1\033[0m\n"
+                         "    * \033[2mnode1\033[0m\n"
                          "    * node2\n"
                          "        * node4\n"
                          "        * node5\n"
@@ -155,9 +155,9 @@ class TreeTest(unittest.TestCase):
         node_done = {'id' : 15, 'text' : 'i am done', 'done' : True}
 
         self.assertEquals('* i am a simple node', printable_format(node_simple))
-        self.assertEquals('\033[1m* i am bold\033[0m', printable_format(node_bold))
+        self.assertEquals('* \033[1mi am bold\033[0m', printable_format(node_bold))
         self.assertEquals('* i wanna be bold</b>', printable_format(node_bold_wannabe))
         self.assertEquals('* i am a node with a \033[33m#tag\033[0m', printable_format(node_tagged_bang))
         self.assertEquals('* i am a node with a \033[33m@tag\033[0m', printable_format(node_tagged_at))
-        self.assertEquals('\033[1m* i am so bold that i have a \033[33m#tag\033[0m', printable_format(node_bold_tagged))
-        self.assertEquals('\033[2m* i am done\033[0m', printable_format(node_done))
+        self.assertEquals('* \033[1mi am so bold that i have a \033[33m#tag\033[0m', printable_format(node_bold_tagged))
+        self.assertEquals('* \033[2mi am done\033[0m', printable_format(node_done))

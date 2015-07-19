@@ -1,5 +1,6 @@
 import json
 import re
+import string
 
 from wfw.wfexceptions import NodeNotFoundError, InvalidTagFormatException
 
@@ -13,7 +14,10 @@ END = '\033[0m'
 
 def add_node(node, parent):
     is_done = 'cp' in node.keys()
-    new_node = {'id' : node['id'], 'text' : node['nm'].encode('utf-8'), 'children' : [], 'done' : is_done, 'parent' : parent['text']}
+    new_node = {'id' : node['id'],
+                'text' : node['nm'].encode('utf-8'),
+                'children' : [],
+                'done' : is_done, 'parent' : parent['text']}
     parent['children'].append(new_node)
 
     if 'ch' in node.keys():
@@ -99,24 +103,22 @@ def exportable_format(node, depth):
 
 
 def printable_format(node, depth=0):
-    style = ''
-    end = ''
     name = node['text']
 
-    if '<b>' in node['text'] and '</b>' in node['text']:
-        style = BRIGHT
-        name = name[3:-4]
-
     if node['done']:
-        style = DIM
+        name = "{}{}{}".format(DIM, name, END)
+    elif '<b>' in name and '</b>' in name:
+        name = string.replace(name, '<b>', BRIGHT)
+        name = string.replace(name, '</b>', END)
 
     for tag in ('@', '#'):
         if tag in name:
             index = name.index(tag)
-            name = name[:index] + YELLOW + name[index:]
-            end = END
+            name = "{}{}{}".format(name[:index], YELLOW, name[index:])
+            if not name.endswith(END):
+                name = name + END
 
-    if style != '':
-        end = END
+    return "{fill}* {name}".format(fill='    ' * depth, name=name)
+
 
     return "{fill}{style}* {name}{end}".format(fill='    ' * depth, style=style, name=name, end=end)
