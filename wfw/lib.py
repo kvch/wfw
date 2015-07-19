@@ -11,8 +11,7 @@ from wfw.tree import (build,
                       print_by_name,
                       print_by_node,
                       print_node_list,
-                      print_stats,
-                      printable_format)
+                      print_stats)
 from wfw.wfexceptions import LocalChangePostingError, NodeNotFoundError
 
 
