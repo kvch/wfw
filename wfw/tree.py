@@ -75,6 +75,17 @@ def export_tree(file_name, root):
         write_to_file(destination, root)
 
 
+def get_node_info(node, children_number=0, done=0):
+    children_number += len(node['children'])
+    if node['done']:
+        done += 1
+
+    for child in node['children']:
+        children_number, done = get_node_info(child, children_number, done)
+
+    return (children_number, done)
+
+
 def print_by_node(start, depth, current_depth=0):
     print(printable_format(start, current_depth))
 
@@ -121,4 +132,7 @@ def printable_format(node, depth=0):
     return "{fill}* {name}".format(fill='    ' * depth, name=name)
 
 
-    return "{fill}{style}* {name}{end}".format(fill='    ' * depth, style=style, name=name, end=end)
+def print_stats(children, done, progress):
+    print("    subtasks: {}".format(children))
+    print("    done: {}".format(done))
+    print("    progress: {}%".format(progress))

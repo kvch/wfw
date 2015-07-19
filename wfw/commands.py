@@ -3,7 +3,14 @@ from wfw.wfexceptions import (InvalidTagFormatException,
                               LocalChangePostingError,
                               LoginFailedException,
                               NodeNotFoundError)
-from wfw.lib import fetch_list, export_list, print_list, search_tags, search_nodes, add_item, remove_item
+from wfw.lib import (add_item,
+                     calc_item_stats,
+                     export_list,
+                     fetch_list,
+                     print_list,
+                     remove_item,
+                     search_nodes,
+                     search_tags)
 
 @click.group()
 def cli():
@@ -89,6 +96,17 @@ def rm(parent_item, deleted_item):
         click.echo("Error while posting your change")
     except Exception as ex:
         click.echo("Error while removing item: {msg}".format(msg=ex.message))
+
+
+@cli.command()
+@click.argument('item')
+def info(item):
+    """Show statistics"""
+
+    try:
+        calc_item_stats(item)
+    except Exception as ex:
+        click.echo("Error while calculating stats: {msg}".format(msg=ex.message))
 
 
 @cli.command()

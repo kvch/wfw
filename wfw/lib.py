@@ -2,7 +2,17 @@ from ConfigParser import RawConfigParser
 from os.path import expanduser, isfile
 
 from wfw.api import log_in, log_out, get_list_from_server, post_local_change
-from wfw.tree import build, export_tree, find_nodes, find_tag, get_node, print_by_name, print_by_node, print_node_list
+from wfw.tree import (build,
+                      export_tree,
+                      find_nodes,
+                      find_tag,
+                      get_node,
+                      get_node_info,
+                      print_by_name,
+                      print_by_node,
+                      print_node_list,
+                      print_stats,
+                      printable_format)
 from wfw.wfexceptions import LocalChangePostingError, NodeNotFoundError
 
 
@@ -99,3 +109,17 @@ def remove_item(parent_item, deleted_item):
     else:
         get_list_from_server(session_id)
         log_out(session_id)
+
+
+def calc_item_stats(item):
+    build_tree_from_file()
+    node = get_node(ROOT, item)
+    number_children, done = get_node_info(node)
+    if node['done']:
+        done = done - 1
+    if number_children > 0:
+        progress = round(done / float(number_children) * 100, 2)
+    else:
+        progress = 0
+    print_node_list([node])
+    print_stats(number_children, done, progress)

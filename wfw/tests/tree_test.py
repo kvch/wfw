@@ -3,7 +3,7 @@ from mock import call, Mock, mock_open, patch
 import json
 import unittest
 
-from wfw.tree import build, export_tree, find_tag, find_nodes, get_node, print_by_name, print_by_node, printable_format
+from wfw.tree import build, export_tree, find_tag, find_nodes, get_node, get_node_info, print_by_name, print_by_node, printable_format
 from wfw.wfexceptions import InvalidTagFormatException, NodeNotFoundError
 
 class TreeTest(unittest.TestCase):
@@ -161,3 +161,6 @@ class TreeTest(unittest.TestCase):
         self.assertEquals('* i am a node with a \033[33m@tag\033[0m', printable_format(node_tagged_at))
         self.assertEquals('* \033[1mi am so bold that i have a \033[33m#tag\033[0m', printable_format(node_bold_tagged))
         self.assertEquals('* \033[2mi am done\033[0m', printable_format(node_done))
+
+    def test_get_node_info(self):
+        self.assertEquals((3, 0), get_node_info(self.node2))
