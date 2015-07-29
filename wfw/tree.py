@@ -1,5 +1,6 @@
 import json
 import re
+from operator import itemgetter
 
 from wfw.wfexceptions import NodeNotFoundError, InvalidTagFormatException
 
@@ -135,3 +136,37 @@ def print_stats(children, done, progress):
     print("    subtasks: {}".format(children))
     print("    done: {}".format(done))
     print("    progress: {}%".format(progress))
+
+
+def get_agenda(node):
+    events = []
+    for child in node['children']:
+        event = dict()
+        event_words = []
+        tokens = child['text'].split(' ')
+        for token in tokens:
+            if token.startswith('@'):
+                event['place'] = token[1:]
+            elif token.startswith('#'):
+                event['date'] = token[1:]
+            else:
+                event_words.append(token)
+        event['desc'] = " ".join(event_words)
+        if 'date' in event:
+            events.append(event)
+
+    events.sort(key=itemgetter('date'))
+
+    return events
+
+
+def print_agenda(events):
+    current_date = events[0]['date']
+    print("---{}---".format(current_date))
+    for event in events:
+        if not current_date == event['date']:
+            current_date = event['date']
+            print("---{}---".format(current_date))
+        print(" {}".format(event['desc']))
+        if "place" in event:
+            print("    // {}".format(event['place']))

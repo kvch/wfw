@@ -3,7 +3,7 @@ from mock import call, Mock, mock_open, patch
 import json
 import unittest
 
-from wfw.tree import build, export_tree, find_tag, find_nodes, get_node, get_node_info, print_by_name, print_by_node, printable_format
+from wfw.tree import build, export_tree, find_tag, find_nodes, get_agenda, get_node, get_node_info, print_by_name, print_by_node, printable_format
 from wfw.wfexceptions import InvalidTagFormatException, NodeNotFoundError
 
 class TreeTest(unittest.TestCase):
@@ -164,3 +164,23 @@ class TreeTest(unittest.TestCase):
 
     def test_get_node_info(self):
         self.assertEquals((3, 0), get_node_info(self.node2))
+
+    def test_agenda(self):
+        agenda = [{'id' : 2,
+                   'text' : 'meeting @bar #2015-01-01'},
+                  {'id' : 3,
+                   'text' : 'doing nothing #2015-01-07'},
+                  {'id' : 4,
+                   'text' : 'breathing'},
+                  {'id' : 5,
+                   'text' : 'going home #2015-01-03'}]
+        root = {'id' : 0, 'text' : 'a', 'children' : agenda}
+        expected = [{'desc' : 'meeting',
+                     'place' : 'bar',
+                     'date' : '2015-01-01'},
+                    {'desc' : 'going home',
+                     'date' : '2015-01-03'},
+                    {'desc' : 'doing nothing',
+                     'date' : '2015-01-07'}]
+
+        self.assertEqual(get_agenda(root), expected)

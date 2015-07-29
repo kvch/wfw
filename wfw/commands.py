@@ -10,7 +10,8 @@ from wfw.lib import (add_item,
                      print_list,
                      remove_item,
                      search_nodes,
-                     search_tags)
+                     search_tags,
+                     show_agenda)
 
 @click.group()
 def cli():
@@ -122,3 +123,14 @@ def tag(tag_to_find):
         click.echo("Invalid tag format: {msg}".format(msg=ex.message))
     except Exception as ex:
         click.echo("Error while searching tag: {msg}".format(msg=ex.message))
+
+
+@cli.command()
+@click.argument('item')
+def agenda(item):
+    """Agenda view"""
+
+    try:
+        show_agenda(item)
+    except Exception as ex:
+        click.echo("Error while showing your agenda: {msg}".format(msg=ex.message))

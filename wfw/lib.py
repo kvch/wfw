@@ -6,8 +6,10 @@ from wfw.tree import (build,
                       export_tree,
                       find_nodes,
                       find_tag,
+                      get_agenda,
                       get_node,
                       get_node_info,
+                      print_agenda,
                       print_by_name,
                       print_by_node,
                       print_node_list,
@@ -122,3 +124,10 @@ def calc_item_stats(item):
         progress = 0
     print_node_list([node])
     print_stats(number_children, done, progress)
+
+def show_agenda(item):
+    build_tree_from_file()
+    node = get_node(ROOT, item)
+    if node:
+        events = get_agenda(node)
+        print_agenda(events)
