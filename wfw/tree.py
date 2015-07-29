@@ -1,6 +1,5 @@
 import json
 import re
-import string
 
 from wfw.wfexceptions import NodeNotFoundError, InvalidTagFormatException
 
@@ -119,8 +118,8 @@ def printable_format(node, depth=0):
     if node['done']:
         name = "{}{}{}".format(DIM, name, END)
     elif '<b>' in name and '</b>' in name:
-        name = string.replace(name, '<b>', BRIGHT)
-        name = string.replace(name, '</b>', END)
+        name = name.replace('<b>', BRIGHT)
+        name = name.replace('</b>', END)
 
     for tag in ('@', '#'):
         if tag in name:
