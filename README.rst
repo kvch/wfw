@@ -47,6 +47,15 @@ Add new item to list.
 
 ``wfw add places home``
 
+wfw add <item>
+~~~~~~~~~~~~~~
+
+Agenda view of a node's children.
+
+item: root of the agenda
+
+``wfw agenda ThisWeek``
+
 wfw export <filename>
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -75,6 +84,15 @@ pattern: pattern that matches the item
 ``wfw find TODO``
 
 ``wfw find ba*``
+
+wfw info <item>
+~~~~~~~~~~~~~~~
+
+Show statistics based on the items state.
+
+``wfw info tasks``
+
+item: root of the group of tasks
 
 wfw rm <parent-item> <deleted-item>
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
