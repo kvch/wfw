@@ -47,7 +47,7 @@ Add new item to list.
 
 ``wfw add places home``
 
-wfw add <item>
+wfw agenda <item>
 ~~~~~~~~~~~~~~
 
 Agenda view of a node's children.
