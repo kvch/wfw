@@ -37,7 +37,7 @@ def export(file_name):
     try:
         export_list(file_name)
     except IOError:
-        click.echo("You have no local tree")
+        click.echo("You have no local list. Please, download it using wfw fetch.")
     except Exception as ex:
         click.echo("Error while exporting: {msg}".format(msg=ex.message))
 
@@ -51,7 +51,7 @@ def show(level, root):
     try:
         print_list(level, root)
     except IOError:
-        click.echo("You have no local tree")
+        click.echo("You have no local list. Please, download it using wfw fetch.")
     except NodeNotFoundError:
         click.echo("No such node")
     except Exception as ex:
@@ -66,7 +66,7 @@ def find(pattern):
     try:
         search_nodes(pattern)
     except IOError:
-        click.echo("You have no local tree")
+        click.echo("You have no local list. Please, download it using wfw fetch.")
     except Exception as ex:
         click.echo("Error while printing list: {msg}".format(msg=ex.message))
 
@@ -118,7 +118,7 @@ def tag(tag_to_find):
     try:
         search_tags(tag_to_find)
     except IOError:
-        click.echo("You have no local tree")
+        click.echo("You have no local list. Please, download it using wfw fetch.")
     except InvalidTagFormatException as ex:
         click.echo("Invalid tag format: {msg}".format(msg=ex.message))
     except Exception as ex:
