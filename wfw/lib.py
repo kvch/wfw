@@ -19,7 +19,7 @@ from wfw.wfexceptions import LocalChangePostingError, NodeNotFoundError
 
 TREE_DATA = expanduser('~/.wfwtree')
 USER_DATA = expanduser('~/.wfwrc')
-ROOT = {'id' : 0, 'text' : 'My list', 'children' : [], 'done' : False}
+ROOT = {'id' : "None", 'text' : 'My list', 'children' : [], 'done' : False}
 
 
 def build_tree_from_file():
