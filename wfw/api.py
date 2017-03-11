@@ -74,6 +74,15 @@ def prepare_deleted_item(parent_id, deleted_id, client_timestamp):
     return operation
 
 
+def _is_successful(request):
+    response = request.json()
+    if 'results' in response and 'error' in response['results'][0]:
+        return False
+    if request.status_code != 200:
+        return False
+    return True
+
+
 def post_local_change(session_id, operation, parent_id, name, deleted_id=None):
     with open(TREE_DATA, 'r') as tree_data:
         config = json.load(tree_data)
@@ -103,6 +112,7 @@ def post_local_change(session_id, operation, parent_id, name, deleted_id=None):
     cookie = {'sessionid' : session_id}
 
     request = requests.post(WFURL + 'push_and_poll', data=payload, cookies=cookie)
+    print(request.text)
 
-    if request.status_code != 200:
+    if not _is_successful(request):
         raise LocalChangePostingError
